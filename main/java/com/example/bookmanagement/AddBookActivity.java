@@ -2,7 +2,9 @@ package com.example.bookmanagement;
 
 import androidx.appcompat.app.AppCompatActivity;
 
+import android.content.Context;
 import android.os.Bundle;
+import android.os.Environment;
 import android.os.StrictMode;
 import android.util.Log;
 import android.view.View;
@@ -10,11 +12,13 @@ import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ListView;
+import android.widget.Toast;
 
 import org.json.JSONObject;
 
 import java.io.ByteArrayOutputStream;
 import java.io.InputStream;
+import java.io.OutputStreamWriter;
 import java.net.HttpURLConnection;
 import java.net.URL;
 
@@ -73,6 +77,22 @@ public class AddBookActivity extends AppCompatActivity {
                             Log.i("result", results[0]);
                             resDisp.setAdapter(adapter);
                             add.setEnabled(true);
+                            add.setOnClickListener(new View.OnClickListener() {
+                                @Override
+                                public void onClick(View view) {
+                                    Context context = AddBookActivity.this;
+                                    try {
+                                        OutputStreamWriter osw = new OutputStreamWriter(context.openFileOutput("RenyiBookStorage.txt", Context.MODE_PRIVATE));
+                                        for (String s : results) {
+                                            osw.write(s);
+                                        }
+                                        osw.close();
+                                        showMsg("添加成功");
+                                    } catch (Exception e) {
+                                        Log.e("Write", e.toString());
+                                    }
+                                }
+                            });
                         } else {
                             String[] errMsg = new String[]{"错误！\n" + jObject.getString("msg")};
                             Log.i("msg", errMsg[0]);
@@ -89,5 +109,19 @@ public class AddBookActivity extends AppCompatActivity {
                 }
             }
         });
+    }
+
+    static Toast toast = null;
+    public void showMsg(String msg) {
+        try {
+            if (toast == null) {
+                toast = Toast.makeText(AddBookActivity.this, msg, Toast.LENGTH_SHORT);
+            } else {
+                toast.setText(msg);
+            }
+            toast.show();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 }
