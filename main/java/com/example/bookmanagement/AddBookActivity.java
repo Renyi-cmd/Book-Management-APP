@@ -19,8 +19,10 @@ import android.widget.Toast;
 
 import org.json.JSONObject;
 
+import java.io.BufferedReader;
 import java.io.ByteArrayOutputStream;
 import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
 import java.net.HttpURLConnection;
 import java.net.URL;
@@ -85,13 +87,20 @@ public class AddBookActivity extends AppCompatActivity {
                                 public void onClick(View view) {
                                     Context context = AddBookActivity.this;
                                     try {
-                                        checkNeedPermissions();
-                                        OutputStreamWriter osw = new OutputStreamWriter(context.openFileOutput("RenyiBookStorage.txt", Context.MODE_PRIVATE));
+                                        String resultStr = "";
                                         for (String s : results) {
-                                            osw.write(s);
+                                            resultStr += s + "\n";
                                         }
-                                        osw.close();
-                                        showMsg("添加成功");
+                                        String fileStr = readFile();
+                                        if(!fileStr.contains(resultStr)) {
+                                            checkNeedPermissions();
+                                            OutputStreamWriter osw = new OutputStreamWriter(context.openFileOutput("RenyiBookStorage.txt", Context.MODE_APPEND));
+                                            osw.write(resultStr + "-----END-OF-ONE-BOOK-----\n");
+                                            osw.close();
+                                            showMsg("添加成功");
+                                        } else {
+                                            showMsg("此书目已存在");
+                                        }
                                     } catch (Exception e) {
                                         Log.e("Write", e.toString());
                                     }
@@ -101,12 +110,14 @@ public class AddBookActivity extends AppCompatActivity {
                             String[] errMsg = new String[]{"错误！\n" + jObject.getString("msg")};
                             Log.i("msg", errMsg[0]);
                             adapter = new ArrayAdapter<String>(AddBookActivity.this, R.layout.list_item, errMsg);
+                            add.setEnabled(false);
                         }
                     }
                 } catch (Exception e) {
                     String[] errMsg = new String[]{"错误！\n" + e.toString()};
                     Log.e("err", e.toString());
                     adapter = new ArrayAdapter<String>(AddBookActivity.this, R.layout.list_item, errMsg);
+                    add.setEnabled(false);
                 }
                 if(adapter != null) {
                     resDisp.setAdapter(adapter);
@@ -127,6 +138,28 @@ public class AddBookActivity extends AppCompatActivity {
         } catch (Exception e) {
             e.printStackTrace();
         }
+    }
+
+    public String readFile() {
+        Context context = AddBookActivity.this;
+        String ret = "";
+        try {
+            InputStream is = context.openFileInput("RenyiBookStorage.txt");
+            if(is != null) {
+                InputStreamReader isr = new InputStreamReader(is);
+                BufferedReader br = new BufferedReader(isr);
+                String recvStr = "";
+                StringBuilder strBuilder = new StringBuilder();
+                while ((recvStr = br.readLine()) != null) {
+                    strBuilder.append("\n").append(recvStr);
+                }
+                is.close();
+                ret = strBuilder.toString();
+            }
+        } catch (Exception e) {
+            Toast.makeText(context, e.toString(), Toast.LENGTH_SHORT).show();
+        }
+        return ret;
     }
 
     private void checkNeedPermissions(){
