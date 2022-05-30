@@ -24,8 +24,9 @@ import java.util.Collections;
 
 public class BookListActivity extends AppCompatActivity implements MyAdapter.ItemClickListener {
 
-    MyAdapter adapter;
-    RecyclerView recyclerView;
+    private MyAdapter adapter;
+    private RecyclerView recyclerView;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -83,7 +84,7 @@ public class BookListActivity extends AppCompatActivity implements MyAdapter.Ite
         builder.setPositiveButton("是", (dialogInterface, i) -> {
             String ret = readFile();
             String tarBook = adapter.getItem(position);
-            String[] books = ret.split(getString(R.string.SEGEND));
+            String[] books = ret.split("-----END-OF-ONE-BOOK-----\n");
             try {
                 checkNeedPermissions();
                 OutputStreamWriter osw = new OutputStreamWriter(BookListActivity.this.openFileOutput("RenyiBookStorage.txt", Context.MODE_PRIVATE));

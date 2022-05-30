@@ -34,11 +34,9 @@ import java.net.URL;
 public class AddBookActivity extends AppCompatActivity {
 
     private String ISBN;
-    Button check;
-    Button add;
-    Button scan;
-    EditText input;
-    ListView resDisp;
+    private Button add;
+    private EditText input;
+    private ListView resDisp;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -48,9 +46,9 @@ public class AddBookActivity extends AppCompatActivity {
         StrictMode.setThreadPolicy(policy);
         setContentView(R.layout.activity_add_book);
 
-        check = findViewById(R.id.search);
+        Button check = findViewById(R.id.search);
         add = findViewById(R.id.addToShelf);
-        scan = findViewById(R.id.scan);
+        Button scan = findViewById(R.id.scan);
         input = findViewById(R.id.inputBookName);
         resDisp = findViewById(R.id.resultDisp);
 
