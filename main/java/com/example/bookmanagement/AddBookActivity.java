@@ -1,10 +1,13 @@
 package com.example.bookmanagement;
 
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.app.ActivityCompat;
+import androidx.core.content.ContextCompat;
 
+import android.Manifest;
 import android.content.Context;
+import android.content.pm.PackageManager;
 import android.os.Bundle;
-import android.os.Environment;
 import android.os.StrictMode;
 import android.util.Log;
 import android.view.View;
@@ -82,6 +85,7 @@ public class AddBookActivity extends AppCompatActivity {
                                 public void onClick(View view) {
                                     Context context = AddBookActivity.this;
                                     try {
+                                        checkNeedPermissions();
                                         OutputStreamWriter osw = new OutputStreamWriter(context.openFileOutput("RenyiBookStorage.txt", Context.MODE_PRIVATE));
                                         for (String s : results) {
                                             osw.write(s);
@@ -122,6 +126,18 @@ public class AddBookActivity extends AppCompatActivity {
             toast.show();
         } catch (Exception e) {
             e.printStackTrace();
+        }
+    }
+
+    private void checkNeedPermissions(){
+        if (ContextCompat.checkSelfPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE)
+                != PackageManager.PERMISSION_GRANTED
+                || ContextCompat.checkSelfPermission(this, Manifest.permission.READ_EXTERNAL_STORAGE)
+                != PackageManager.PERMISSION_GRANTED) {
+            ActivityCompat.requestPermissions(this, new String[]{
+                    Manifest.permission.WRITE_EXTERNAL_STORAGE,
+                    Manifest.permission.READ_EXTERNAL_STORAGE
+            }, 1);
         }
     }
 }
