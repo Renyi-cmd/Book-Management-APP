@@ -1,11 +1,13 @@
 package com.example.bookmanagement;
 
+import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 
 import android.Manifest;
 import android.content.Context;
+import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.os.Bundle;
 import android.os.StrictMode;
@@ -19,6 +21,10 @@ import android.widget.Toast;
 
 import org.json.JSONObject;
 
+import com.google.zxing.integration.android.IntentIntegrator;
+import com.google.zxing.integration.android.IntentResult;
+import com.journeyapps.barcodescanner.CaptureActivity;
+
 import java.io.BufferedReader;
 import java.io.ByteArrayOutputStream;
 import java.io.InputStream;
@@ -29,6 +35,9 @@ import java.net.URL;
 
 public class AddBookActivity extends AppCompatActivity {
 
+    private String ISBN;
+    EditText input;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -38,16 +47,30 @@ public class AddBookActivity extends AppCompatActivity {
 
         Button check = findViewById(R.id.search);
         Button add = findViewById(R.id.addToShelf);
-        EditText input = findViewById(R.id.inputBookName);
+        Button scan = findViewById(R.id.scan);
+        input = findViewById(R.id.inputBookName);
         ListView resDisp = findViewById(R.id.resultDisp);
 
         resDisp.setAdapter(new ArrayAdapter<String>(AddBookActivity.this, R.layout.list_item, new String[]{"点击按钮以开始查询"}));
         add.setEnabled(false);
 
+        scan.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                IntentIntegrator integrator = new IntentIntegrator(AddBookActivity.this);
+                integrator.setDesiredBarcodeFormats(IntentIntegrator.ONE_D_CODE_TYPES);
+                integrator.setPrompt("扫描条形码");
+                integrator.setCameraId(0);
+                integrator.setBeepEnabled(false);
+                integrator.setBarcodeImageEnabled(true);
+                integrator.initiateScan();
+            }
+        });
+
         check.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                String ISBN = input.getText().toString();
+                ISBN = input.getText().toString();
                 String urlStr = "https://api.jike.xyz/situ/book/isbn/"+ISBN+"?apikey=12754.9a34174fcd10d70b73859dd91d7d2d83.378efba1193c670e72199ec7a4613718";
                 ArrayAdapter<String> adapter = null;
                 try {
@@ -171,6 +194,23 @@ public class AddBookActivity extends AppCompatActivity {
                     Manifest.permission.WRITE_EXTERNAL_STORAGE,
                     Manifest.permission.READ_EXTERNAL_STORAGE
             }, 1);
+        }
+    }
+
+    @Override
+    protected void onActivityResult (int requestCode, int resultCode,@Nullable Intent data) {
+        IntentResult result = IntentIntegrator.parseActivityResult(requestCode, resultCode, data);
+        if(result != null) {
+            if(result.getContents() == null) {
+                Toast.makeText(this, "扫码取消", Toast.LENGTH_LONG).show();
+            } else {
+                ISBN = result.getContents();
+                input.setText(ISBN);
+                Toast.makeText(this, "扫描成功", Toast.LENGTH_LONG).show();
+            }
+        } else {
+            // This is important, otherwise the result will not be passed to the fragment
+            super.onActivityResult(requestCode, resultCode, data);
         }
     }
 }
